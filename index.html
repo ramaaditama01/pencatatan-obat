@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SelfCare - Pencatatan Obat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary: #2196F3;
+            --danger: #F44336;
+            --warning: #FF9800;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .user-info {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        /* Tampilan Auth */
+        .auth-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 30px auto;
+            max-width: 500px;
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+            border: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .auth-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* Card Styles */
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        /* Form Obat */
+        .medication-form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 30px 0;
+        }
+        
+        .time-options, .meal-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .time-option, .meal-option {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .time-option input, .meal-option input {
+            display: none;
+        }
+        
+        .time-option label, .meal-option label {
+            display: block;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .time-option input:checked + label,
+        .meal-option input:checked + label {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        /* Riwayat Obat */
+        .history-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+        
+        .history-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .history-item .med-info {
+            flex: 1;
+        }
+        
+        .history-item .med-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .history-item .med-details {
+            display: flex;
+            gap: 15px;
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .history-item .med-details i {
+            margin-right: 5px;
+        }
+        
+        .history-item .delete-btn {
+            color: var(--danger);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            transition: transform 0.2s;
+        }
+        
+        .history-item .delete-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Notifikasi */
+        .notification-permission {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Alert */
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Responsif */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .time-options, .meal-options {
+                flex-direction: column;
+            }
+            
+            .history-item .med-details {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .user-info {
+                position: static;
+                justify-content: flex-end;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div id="user-info" class="user-info" style="display: none;">
+                <span id="user-name"></span>
+                <button id="logout-btn" class="btn btn-danger btn-small">Logout</button>
+            </div>
+            <h1>SelfCare</h1>
+            <p>Pencatatan Obat Mandiri yang Aman</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Alert Messages -->
+        <div id="alert-success" class="alert alert-success"></div>
+        <div id="alert-danger" class="alert alert-danger"></div>
+        
+        <!-- Sistem Login/Daftar -->
+        <div id="auth-container" class="auth-container">
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="login-tab">Masuk</button>
+                <button class="auth-tab" id="register-tab">Daftar</button>
+            </div>
+            
+            <!-- Form Login -->
+            <div id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
+                    <div id="login-email-error" class="error-message">Email tidak valid</div>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required minlength="6">
+                    <div id="login-password-error" class="error-message">Password minimal 6 karakter</div>
+                </div>
+                <button class="btn btn-primary" id="login-btn">Masuk</button>
+            </div>
+            
+            <!-- Form Daftar -->
+            <div id="register-form" style="display: none;">
+                <div class="form-group">
+                    <label for="register-name">Nama Lengkap</label>
+                    <input type="text" id="register-name" required>
+                    <div id="register-name-error" class="error-message">Nama harus diisi</div>
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required>
+                    <div id="register-email-error" class="error-message">Email tidak valid</div>
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" required minlength="6">
+                    <div id="register-password-error" class="error-message">Password minimal 6 karakter</div>
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm">Konfirmasi Password</label>
+                    <input type="password" id="register-confirm" required minlength="6">
+                    <div id="register-confirm-error" class="error-message">Password tidak cocok</div>
+                </div>
+                <button class="btn btn-primary" id="register-btn">Daftar</button>
+            </div>
+        </div>
+        
+        <!-- Konten Utama (muncul setelah login) -->
+        <div id="main-content" style="display: none;">
+            <!-- Edukasi -->
+            <div class="card">
+                <h2><i class="fas fa-info-circle"></i> Informasi Penting</h2>
+                <div style="margin-bottom: 20px;">
+                    <h3>📢 Bahaya Self-Medication</h3>
+                    <ul style="margin-left: 20px; margin-bottom: 15px;">
+                        <li>Risiko salah diagnosis</li>
+                        <li>Efek samping obat</li>
+                        <li>Interaksi obat berbahaya</li>
+                    </ul>
+                    
+                    <h3>Manfaat Pencatatan Obat</h3>
+                    <ul style="margin-left: 20px;">
+                        <li>Memantau jadwal minum obat</li>
+                        <li>Mencegah overdosis</li>
+                        <li>Informasi untuk tenaga kesehatan</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong><i class="fas fa-exclamation-triangle"></i> Peringatan:</strong> Aplikasi ini hanya untuk pencatatan, bukan pengganti saran medis profesional.
+                </div>
+            </div>
+            
+            <!-- Permintaan Izin Notifikasi -->
+            <div class="notification-permission">
+                <div>
+                    <h3><i class="fas fa-bell"></i> Aktifkan Notifikasi</h3>
+                    <p>Dapatkan pengingat minum obat saat aplikasi ditutup</p>
+                </div>
+                <button class="btn btn-secondary" id="enable-notifications">
+                    <i class="fas fa-bell"></i> Aktifkan
+                </button>
+            </div>
+            
+            <!-- Form Obat -->
+            <div class="medication-form">
+                <h2><i class="fas fa-pills"></i> Form Pencatatan Obat</h2>
+                <form id="medication-form">
+                    <div class="form-group">
+                        <label for="med-name">Nama Obat</label>
+                        <input type="text" id="med-name" required>
+                        <div id="med-name-error" class="error-message">Nama obat harus diisi</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="med-dosage">Dosis</label>
+                        <input type="text" id="med-dosage" placeholder="Contoh: 1 tablet pagi dan sore" required>
+                        <div id="med-dosage-error" class="error-message">Dosis harus diisi</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Waktu Minum</label>
+                        <div class="time-options">
+                            <div class="time-option">
+                                <input type="radio" id="time-morning" name="time" value="Pagi" checked>
+                                <label for="time-morning">Pagi</label>
+                            </div>
+                            <div class="time-option">
+                                <input type="radio" id="time-afternoon" name="time" value="Siang">
+                                <label for="time-afternoon">Siang</label>
+                            </div>
+                            <div class="time-option">
+                                <input type="radio" id="time-evening" name="time" value="Malam">
+                                <label for="time-evening">Malam</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Waktu Makan</label>
+                        <div class="meal-options">
+                            <div class="meal-option">
+                                <input type="radio" id="meal-before" name="meal" value="Sebelum Makan" checked>
+                                <label for="meal-before">Sebelum Makan</label>
+                            </div>
+                            <div class="meal-option">
+                                <input type="radio" id="meal-after" name="meal" value="Sesudah Makan">
+                                <label for="meal-after">Sesudah Makan</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="med-time">Jam Minum</label>
+                        <input type="time" id="med-time" required>
+                        <div id="med-time-error" class="error-message">Jam minum harus diisi</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="next-time">Jam Minum Berikutnya (Anjuran Apoteker)</label>
+                        <input type="time" id="next-time" required>
+                        <div id="next-time-error" class="error-message">Jam berikutnya harus diisi</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan Catatan
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Riwayat Obat -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin: 0;"><i class="fas fa-history"></i> Riwayat Obat</h2>
+                    <button id="clear-history" class="btn btn-danger btn-small">
+                        <i class="fas fa-trash"></i> Hapus Semua
+                    </button>
+                </div>
+                <div id="medication-history">
+                    <!-- Riwayat akan muncul di sini -->
+                    <div id="empty-history" style="text-align: center; padding: 20px; color: var(--gray);">
+                        <i class="fas fa-pills" style="font-size: 50px; opacity: 0.5; margin-bottom: 10px;"></i>
+                        <p>Belum ada riwayat obat</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Pengguna dan Obat
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let currentUser = null;
+        let medications = [];
+        
+        // DOM Elements
+        const authContainer = document.getElementById('auth-container');
+        const mainContent = document.getElementById('main-content');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const medHistory = document.getElementById('medication-history');
+        const userInfo = document.getElementById('user-info');
+        const userName = document.getElementById('user-name');
+        const emptyHistory = document.getElementById('empty-history');
+        
+        // Alert Elements
+        const alertSuccess = document.getElementById('alert-success');
+        const alertDanger = document.getElementById('alert-danger');
+        
+        // Event Listeners
+        document.getElementById('login-tab').addEventListener('click', () => switchAuthTab('login'));
+        document.getElementById('register-tab').addEventListener('click', () => switchAuthTab('register'));
+        document.getElementById('login-btn').addEventListener('click', loginUser);
+        document.getElementById('register-btn').addEventListener('click', registerUser);
+        document.getElementById('enable-notifications').addEventListener('click', requestNotificationPermission);
+        document.getElementById('medication-form').addEventListener('submit', saveMedication);
+        document.getElementById('logout-btn').addEventListener('click', logoutUser);
+        document.getElementById('clear-history').addEventListener('click', clearHistory);
+        
+        // Validasi Input
+        document.getElementById('login-email').addEventListener('input', validateEmail);
+        document.getElementById('login-password').addEventListener('input', validatePassword);
+        document.getElementById('register-email').addEventListener('input', validateEmail);
+        document.getElementById('register-password').addEventListener('input', validatePassword);
+        document.getElementById('register-confirm').addEventListener('input', validateConfirmPassword);
+        
+        // Fungsi untuk menampilkan alert
+        function showAlert(type, message) {
+            if (type === 'success') {
+                alertSuccess.innerHTML = message;
+                alertSuccess.style.display = 'block';
+                alertDanger.style.display = 'none';
+                
+                setTimeout(() => {
+                    alertSuccess.style.display = 'none';
+                }, 5000);
+            } else {
+                alertDanger.innerHTML = message;
+                alertDanger.style.display = 'block';
+                alertSuccess.style.display = 'none';
+                
+                setTimeout(() => {
+                    alertDanger.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Fungsi validasi email
+        function validateEmail(e) {
+            const email = e.target.value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const isValid = emailRegex.test(email);
+            
+            if (e.target.id.includes('login')) {
+                document.getElementById('login-email-error').style.display = isValid ? 'none' : 'block';
+            } else {
+                document.getElementById('register-email-error').style.display = isValid ? 'none' : 'block';
+            }
+            
+            return isValid;
+        }
+        
+        // Fungsi validasi password
+        function validatePassword(e) {
+            const password = e.target.value;
+            const isValid = password.length >= 6;
+            
+            if (e.target.id.includes('login')) {
+                document.getElementById('login-password-error').style.display = isValid ? 'none' : 'block';
+            } else {
+                document.getElementById('register-password-error').style.display = isValid ? 'none' : 'block';
+            }
+            
+            return isValid;
+        }
+        
+        // Fungsi validasi konfirmasi password
+        function validateConfirmPassword() {
+            const password = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm').value;
+            const isValid = password === confirm;
+            
+            document.getElementById('register-confirm-error').style.display = isValid ? 'none' : 'block';
+            return isValid;
+        }
+        
+        // Fungsi Tab Auth
+        function switchAuthTab(tab) {
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                document.getElementById('login-tab').classList.add('active');
+                document.getElementById('register-tab').classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                document.getElementById('register-tab').classList.add('active');
+                document.getElementById('login-tab').classList.remove('active');
+            }
+        }
+        
+        // Fungsi hash password sederhana (untuk demo saja, tidak aman untuk produksi)
+        function simpleHash(password) {
+            let hash = 0;
+            for (let i = 0; i < password.length; i++) {
+                const char = password.charCodeAt(i);
+                hash = (hash << 5) - hash + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return hash.toString();
+        }
+        
+        // Fungsi Login
+        function loginUser() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Validasi input
+            if (!validateEmail({target: {value: email}})) {
+                showAlert('danger', 'Email tidak valid');
+                return;
+            }
+            
+            if (!validatePassword({target: {value: password}})) {
+                showAlert('danger', 'Password minimal 6 karakter');
+                return;
+            }
+            
+            const hashedPassword = simpleHash(password);
+            const user = users.find(u => u.email === email && u.password === hashedPassword);
+            
+            if (user) {
+                currentUser = user;
+                medications = JSON.parse(localStorage.getItem(`meds_${user.email}`)) || [];
+                authContainer.style.display = 'none';
+                mainContent.style.display = 'block';
+                userInfo.style.display = 'flex';
+                userName.textContent = user.name;
+                renderMedHistory();
+                initServiceWorker();
+                
+                showAlert('success', `Selamat datang, ${user.name}!`);
+            } else {
+                showAlert('danger', 'Email atau password salah');
+            }
+        }
+        
+        // Fungsi Daftar
+        function registerUser() {
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm').value;
+            
+            // Validasi input
+            if (!name) {
+                document.getElementById('register-name-error').style.display = 'block';
+                showAlert('danger', 'Nama harus diisi');
+                return;
+            } else {
+                document.getElementById('register-name-error').style.display = 'none';
+            }
+            
+            if (!validateEmail({target: {value: email}})) {
+                showAlert('danger', 'Email tidak valid');
+                return;
+            }
+            
+            if (!validatePassword({target: {value: password}})) {
+                showAlert('danger', 'Password minimal 6 karakter');
+                return;
+            }
+            
+            if (!validateConfirmPassword()) {
+                showAlert('danger', 'Password tidak cocok');
+                return;
+            }
+            
+            if (users.some(u => u.email === email)) {
+                showAlert('danger', 'Email sudah terdaftar');
+                return;
+            }
+            
+            const hashedPassword = simpleHash(password);
+            const newUser = { name, email, password: hashedPassword };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            showAlert('success', 'Pendaftaran berhasil! Silakan login');
+            switchAuthTab('login');
+            
+            // Reset form
+            document.getElementById('register-form').reset();
+        }
+        
+        // Fungsi Logout
+        function logoutUser() {
+            currentUser = null;
+            medications = [];
+            authContainer.style.display = 'block';
+            mainContent.style.display = 'none';
+            userInfo.style.display = 'none';
+            document.getElementById('login-form').reset();
+            switchAuthTab('login');
+            
+            showAlert('success', 'Anda telah logout');
+        }
+        
+        // Fungsi Notifikasi
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                showAlert('danger', 'Browser tidak mendukung notifikasi');
+                return;
+            }
+            
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    showAlert('success', 'Notifikasi diaktifkan! Anda akan menerima pengingat.');
+                    testNotification();
+                } else {
+                    showAlert('warning', 'Izin notifikasi ditolak. Anda tidak akan menerima pengingat saat aplikasi ditutup.');
+                }
+            });
+        }
+        
+        function testNotification() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.showNotification('SelfCare - Tes Notifikasi', {
+                        body: 'Ini bukti notifikasi bekerja saat aplikasi ditutup',
+                        icon: 'https://farmasistikesadila.github.io/favicon.ico',
+                        vibrate: [200,100,200]
+                    });
+                });
+            }
+        }
+        
+        // Fungsi Service Worker
+        function initServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            }
+        }
+        
+        // Fungsi Simpan Obat
+        function saveMedication(e) {
+            e.preventDefault();
+            
+            // Validasi form
+            const medName = document.getElementById('med-name').value;
+            const dosage = document.getElementById('med-dosage').value;
+            const medTime = document.getElementById('med-time').value;
+            const nextTime = document.getElementById('next-time').value;
+            
+            if (!medName) {
+                document.getElementById('med-name-error').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('med-name-error').style.display = 'none';
+            }
+            
+            if (!dosage) {
+                document.getElementById('med-dosage-error').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('med-dosage-error').style.display = 'none';
+            }
+            
+            if (!medTime) {
+                document.getElementById('med-time-error').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('med-time-error').style.display = 'none';
+            }
+            
+            if (!nextTime) {
+                document.getElementById('next-time-error').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('next-time-error').style.display = 'none';
+            }
+            
+            const time = document.querySelector('input[name="time"]:checked').value;
+            const meal = document.querySelector('input[name="meal"]:checked').value;
+            
+            const medication = {
+                id: Date.now(),
+                name: medName,
+                dosage,
+                time,
+                meal,
+                medTime,
+                nextTime,
+                timestamp: new Date().toISOString()
+            };
+            
+            medications.push(medication);
+            localStorage.setItem(`meds_${currentUser.email}`, JSON.stringify(medications));
+            
+            scheduleNotification(medication);
+            renderMedHistory();
+            e.target.reset();
+            
+            showAlert('success', 'Catatan obat berhasil disimpan!');
+        }
+        
+        // Fungsi Jadwalkan Notifikasi
+        function scheduleNotification(med) {
+            if (Notification.permission !== 'granted') return;
+            
+            const now = new Date();
+            const [hours, mins] = med.medTime.split(':');
+            const notifyTime = new Date();
+            
+            notifyTime.setHours(parseInt(hours), parseInt(mins), 0, 0);
+            
+            // Jika waktu sudah lewat, atur untuk besok
+            if (notifyTime < now) notifyTime.setDate(notifyTime.getDate() + 1);
+            
+            const timeout = notifyTime.getTime() - now.getTime();
+            
+            setTimeout(() => {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.ready.then(reg => {
+                        reg.showNotification(`SelfCare - Waktunya Minum Obat`, {
+                            body: `${med.name}\nDosis: ${med.dosage}\nWaktu: ${med.time} (${med.meal})`,
+                            icon: 'https://farmasistikesadila.github.io/favicon.ico',
+                            vibrate: [200,100,200],
+                            data: { url: window.location.href }
+                        });
+                    });
+                }
+                
+                // Jadwalkan notifikasi berikutnya
+                const [nextH, nextM] = med.nextTime.split(':');
+                const nextNotify = new Date(notifyTime);
+                nextNotify.setHours(parseInt(nextH), parseInt(nextM));
+                
+                if (nextNotify > notifyTime) {
+                    const nextTimeout = nextNotify.getTime() - notifyTime.getTime();
+                    setTimeout(() => {
+                        navigator.serviceWorker?.ready.then(reg => {
+                            reg.showNotification(`SelfCare - Pengingat Lanjutan`, {
+                                body: `${med.name}\nDosis: ${med.dosage}\nWaktu: Anjuran Apoteker`,
+                                icon: 'https://farmasistikesadila.github.io/favicon.ico',
+                                vibrate: [200,100,200]
+                            });
+                        });
+                    }, nextTimeout);
+                }
+            }, timeout);
+        }
+        
+        // Fungsi Render Riwayat
+        function renderMedHistory() {
+            medHistory.innerHTML = '';
+            
+            if (medications.length === 0) {
+                emptyHistory.style.display = 'block';
+                return;
+            } else {
+                emptyHistory.style.display = 'none';
+            }
+            
+            medications.forEach(med => {
+                const medEl = document.createElement('div');
+                medEl.className = 'history-item';
+                medEl.innerHTML = `
+                    <div class="med-info">
+                        <div class="med-name">${med.name}</div>
+                        <div class="med-details">
+                            <span><i class="fas fa-prescription-bottle-alt"></i> ${med.dosage}</span>
+                            <span><i class="fas fa-clock"></i> ${med.time} (${med.meal})</span>
+                            <span><i class="fas fa-hourglass-start"></i> ${med.medTime}</span>
+                            <span><i class="fas fa-hourglass-end"></i> ${med.nextTime} (Anjuran)</span>
+                        </div>
+                    </div>
+                    <button class="delete-btn" data-id="${med.id}" title="Hapus">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                
+                medHistory.appendChild(medEl);
+            });
+            
+            // Tambahkan event listener untuk tombol hapus
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        medications = medications.filter(m => m.id !== id);
+                        localStorage.setItem(`meds_${currentUser.email}`, JSON.stringify(medications));
+                        renderMedHistory();
+                        showAlert('success', 'Catatan obat berhasil dihapus');
+                    }
+                });
+            });
+        }
+        
+        // Fungsi Hapus Semua Riwayat
+        function clearHistory() {
+            if (medications.length === 0) return;
+            
+            if (confirm('Apakah Anda yakin ingin menghapus semua riwayat obat?')) {
+                medications = [];
+                localStorage.setItem(`meds_${currentUser.email}`, JSON.stringify(medications));
+                renderMedHistory();
+                showAlert('success', 'Semua riwayat obat telah dihapus');
+            }
+        }
+        
+        // Inisialisasi
+        if (localStorage.getItem('users')) {
+            switchAuthTab('login');
+        } else {
+            switchAuthTab('register');
+        }
+    </script>
+</body>
+</html>
